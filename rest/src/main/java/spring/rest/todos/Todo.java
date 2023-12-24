@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import spring.rest.assignees.Assignee;
 
 @Entity
 @Table(name = "todos")
@@ -29,4 +30,11 @@ public class Todo {
 
     @Column(name = "urgent")
     private Boolean urgent;
+
+    @Column(name = "assignee_id")
+    private Long assigneeId;
+
+    @ManyToOne
+    @JoinColumn(name = "assignee_id", insertable = false, updatable = false)
+    private Assignee assignee;
 }
