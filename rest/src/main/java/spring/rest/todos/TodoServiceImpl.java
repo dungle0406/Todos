@@ -2,6 +2,7 @@ package spring.rest.todos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Example;
@@ -57,7 +58,7 @@ public class TodoServiceImpl implements TodoService {
     @Override
     @CachePut(value = "todosCache", key = "'allTodos'")
     public void edit(Long id, TodoDTO dto) throws TodoNotFoundException {
-        var optionalCacheData = cacheDataRepository.findById("allTodos");
+        var optionalCacheData = cacheDataRepository.findById("todo_" + id);
 
         if (optionalCacheData.isPresent()) {
             cacheService.editCachedData(optionalCacheData.get(), dto);
@@ -71,7 +72,15 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
+    @CacheEvict(value = "todosCache", key = "'allTodos'")
     public void delete(Long id) throws TodoNotFoundException {
+        String targetId = "todo_" + id;
+
+        if (cacheDataRepository.findById(targetId).isPresent()) {
+            cacheDataRepository.deleteById(targetId);
+            return;
+        }
+
         todoRepository.delete(todoRepository
                 .findById(id)
                 .orElseThrow(() -> new TodoNotFoundException(id)));

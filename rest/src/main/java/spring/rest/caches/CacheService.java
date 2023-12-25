@@ -8,9 +8,8 @@ import java.util.List;
 @Service
 public interface CacheService<T> {
     CacheData createNewCacheData(String cacheKey, T t) throws JsonProcessingException;
+
     List<T> readCachedData(String cachedDataAsString);
 
     void editCachedData(CacheData cacheData, T t);
-
-    void delete(T t);
 }

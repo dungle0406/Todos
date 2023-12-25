@@ -40,9 +40,4 @@ public class CacheServiceImpl<T> implements CacheService<T> {
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public void delete(Object o) {
-
-    }
 }
