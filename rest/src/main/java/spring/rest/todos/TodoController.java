@@ -1,5 +1,6 @@
 package spring.rest.todos;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class TodoController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public List<TodoDTO> findAllTodos(@ModelAttribute TodoDTO dto) {
+    public List<TodoDTO> findAllTodos(@ModelAttribute TodoDTO dto) throws JsonProcessingException {
         return todoService.findAll(dto);
     }
 

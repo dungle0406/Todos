@@ -1,5 +1,6 @@
 package spring.rest.todos;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 public interface TodoService {
     void create(TodoDTO dto);
 
-    List<TodoDTO> findAll(TodoDTO dto);
+    List<TodoDTO> findAll(TodoDTO dto) throws JsonProcessingException;
 
     void edit(Long id, TodoDTO dto) throws TodoNotFoundException;
 
