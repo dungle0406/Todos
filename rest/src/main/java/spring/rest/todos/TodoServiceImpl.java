@@ -1,34 +1,32 @@
 package spring.rest.todos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
 import spring.rest.caches.CacheData;
 import spring.rest.caches.CacheDataRepository;
+import spring.rest.caches.CacheServiceImpl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class TodoServiceImpl implements TodoService {
+    private final CacheDataRepository cacheDataRepository;
     private final TodoRepository todoRepository;
     private final TodoMapper todoMapper;
-    private final CacheDataRepository cacheDataRepository;
-    private final ObjectMapper objectMapper;
-
+    private final CacheServiceImpl<TodoDTO> cacheService;
+    private final int CACHE_THRESHOLD = 2;
 
     @Autowired
-    public TodoServiceImpl(TodoRepository todoRepository, TodoMapper todoMapper, CacheDataRepository cacheDataRepository, ObjectMapper objectMapper) {
+    public TodoServiceImpl(TodoRepository todoRepository, TodoMapper todoMapper, CacheDataRepository cacheDataRepository, CacheServiceImpl<TodoDTO> cacheService) {
         this.todoRepository = todoRepository;
         this.todoMapper = todoMapper;
         this.cacheDataRepository = cacheDataRepository;
-        this.objectMapper = objectMapper;
+        this.cacheService = cacheService;
     }
 
     @Override
@@ -38,20 +36,34 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     @Cacheable(value = "todosCache", key = "'allTodos'")
-    public List<TodoDTO> findAll(TodoDTO dto) throws JsonProcessingException {
-        Optional<CacheData> optionalCacheData = cacheDataRepository.findById("allTodos");
+    public List<TodoDTO> findAll(TodoDTO dto) {
+        var optionalCacheData = cacheDataRepository.findById("allTodos");
+
         if (optionalCacheData.isPresent()) {
-            return readCachedData(optionalCacheData.get().getValue());
+            return cacheService.readCachedData(optionalCacheData.get().getValue());
         }
 
         return todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
                 .stream()
                 .map(todoMapper::mapDtoFromTodo)
-                .peek(this::cacheTodoDto).collect(Collectors.toList());
+                .peek(todoDTO -> {
+                    if (todoDTO.getId() <= CACHE_THRESHOLD) {
+                        cacheDataRepository.save(createCacheData(todoDTO));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
+    @CachePut(value = "todosCache", key = "'allTodos'")
     public void edit(Long id, TodoDTO dto) throws TodoNotFoundException {
+        var optionalCacheData = cacheDataRepository.findById("allTodos");
+
+        if (optionalCacheData.isPresent()) {
+            cacheService.editCachedData(optionalCacheData.get(), dto);
+            return;
+        }
+
         todoRepository.save(todoMapper
                 .updateTodoFromDto(dto, todoRepository
                         .findById(id)
@@ -65,20 +77,9 @@ public class TodoServiceImpl implements TodoService {
                 .orElseThrow(() -> new TodoNotFoundException(id)));
     }
 
-    private void cacheTodoDto(TodoDTO dto) {
-        if (dto.getId() <= 2) {
-            try {
-                cacheDataRepository.save(new CacheData("allTodos", objectMapper.writeValueAsString(dto)));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private List<TodoDTO> readCachedData(String optionalCacheDataAsString) {
+    private CacheData createCacheData(TodoDTO todoDto) {
         try {
-            return objectMapper.readValue(optionalCacheDataAsString, new TypeReference<List<TodoDTO>>() {
-            });
+            return cacheService.createNewCacheData("allTodos", todoDto);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
