@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import spring.rest.todos.TodoDTO;
+
+import java.util.List;
 
 @Getter
 @ToString
@@ -17,4 +20,7 @@ public class AssigneeDTO {
 
     @JsonProperty("email")
     private String email;
+
+    @JsonProperty("todos")
+    private List<TodoDTO> todos;
 }
