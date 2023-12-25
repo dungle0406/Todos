@@ -31,12 +31,16 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public void edit(Long id, TodoDTO dto) throws TodoNotFoundException {
-        todoRepository.findById(id)
-                .orElseThrow(() -> new TodoNotFoundException(id));
+        todoRepository.save(todoMapper
+                .updateTodoFromDto(dto, todoRepository
+                        .findById(id)
+                        .orElseThrow(() -> new TodoNotFoundException(id))));
     }
 
     @Override
     public void delete(Long id) throws TodoNotFoundException {
-        todoRepository.delete(todoRepository.findById(id).orElseThrow(() -> new TodoNotFoundException(id)));
+        todoRepository.delete(todoRepository
+                .findById(id)
+                .orElseThrow(() -> new TodoNotFoundException(id)));
     }
 }
