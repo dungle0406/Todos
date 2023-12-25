@@ -24,8 +24,8 @@ public class TodoController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public List<TodoDTO> findAllTodos() {
-        return todoService.findAll();
+    public List<TodoDTO> findAllTodos(@ModelAttribute TodoDTO dto) {
+        return todoService.findAll(dto);
     }
 
     @PutMapping("/{id}")
@@ -36,7 +36,7 @@ public class TodoController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable Long id) throws TodoNotFoundException {
+    public void deleteTodo(@PathVariable Long id) throws TodoNotFoundException {
         todoService.delete(id);
     }
 }

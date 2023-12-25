@@ -7,7 +7,7 @@ import java.util.List;
 public interface TodoService {
     void create(TodoDTO dto);
 
-    List<TodoDTO> findAll();
+    List<TodoDTO> findAll(TodoDTO dto);
 
     void edit(Long id, TodoDTO dto) throws TodoNotFoundException;
 

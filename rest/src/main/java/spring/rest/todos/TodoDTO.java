@@ -20,4 +20,7 @@ public class TodoDTO {
 
     @JsonProperty("urgent")
     private Boolean urgent;
+
+    @JsonProperty("assignee")
+    private Long assigneeId;
 }

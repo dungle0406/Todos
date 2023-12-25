@@ -1,6 +1,7 @@
 package spring.rest.todos;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -23,8 +24,9 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public List<TodoDTO> findAll() {
-        return todoRepository.findAll().stream()
+    public List<TodoDTO> findAll(TodoDTO dto) {
+        return todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
+                .stream()
                 .map(todoMapper::mapDtoFromTodo)
                 .collect(Collectors.toList());
     }
