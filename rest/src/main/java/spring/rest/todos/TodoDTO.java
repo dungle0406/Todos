@@ -5,10 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Getter
 @ToString
 @Builder
-public class TodoDTO {
+public class TodoDTO implements Serializable {
     @JsonProperty("id")
     private Long id;
 
