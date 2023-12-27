@@ -35,29 +35,20 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    @Cacheable(value = "todosCache", key = "'allTodos:' + T(java.util.Objects).hashCode(#dto.id)")
-    public List<TodoDTO> findAll(TodoDTO dto) {
-        String cacheKey = "allTodos" + dto.getId();
-        List<TodoDTO> cachedTodos = (List<TodoDTO>) redisTemplate.opsForValue().get(cacheKey);
+    @Cacheable(value = "todos", key = "#dto.hashCode()")
+    public List<TodoDTO> findAll(TodoDTO dto) throws JsonProcessingException {
+        return fetchAndCache(dto);
+    }
 
-        if (cachedTodos != null) {
-            return cachedTodos;
-        }
-
-        List<TodoDTO> todoDTOS = todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
+    @CachePut(value = "todos", key = "#dto.hashCode()")
+    public List<TodoDTO> fetchAndCache(TodoDTO dto) throws JsonProcessingException {
+        return todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
                 .stream()
                 .map(todoMapper::mapDtoFromTodo)
                 .collect(Collectors.toList());
-
-        if (todoDTOS.stream().anyMatch(todoDto -> todoDto.getId() != null && todoDto.getId() <= CACHE_THRESHOLD)) {
-            redisTemplate.opsForHash().put(cacheKey, "todos", todoDTOS);
-        }
-
-        return todoDTOS;
     }
 
     @Override
-    @CachePut(value = "todosCache", key = "'allTodos'")
     public void edit(Long id, TodoDTO dto) throws TodoNotFoundException {
         todoRepository.save(todoMapper
                 .updateTodoFromDto(dto, todoRepository
@@ -66,7 +57,6 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    @CacheEvict(value = "todosCache", key = "'allTodos'")
     public void delete(Long id) throws TodoNotFoundException {
         todoRepository.delete(todoRepository
                 .findById(id)
