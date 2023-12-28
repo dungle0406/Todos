@@ -1,7 +1,6 @@
 package spring.rest.todos;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Example;
@@ -14,7 +13,7 @@ import java.util.stream.Collectors;
 public class TodoServiceImpl implements TodoService {
     private final TodoRepository todoRepository;
     private final TodoMapper todoMapper;
-    private final int CACHE_THRESHOLD = 2;
+    private final int CACHE_THRESHOLD = 3;
 
     @Autowired
     public TodoServiceImpl(TodoRepository todoRepository, TodoMapper todoMapper) {
@@ -28,16 +27,17 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    @Cacheable(value = "todosCache", keyGenerator = "keyGenerator")
+    @Cacheable(value = "todosCache", keyGenerator = "todoKeyGenerator")
     public List<TodoDTO> findAll(TodoDTO dto) {
         return todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
                 .stream()
                 .map(todoMapper::mapDtoFromTodo)
+                .filter(todoDTO -> todoDTO.getId() != null && todoDTO.getId() > CACHE_THRESHOLD)
                 .collect(Collectors.toList());
     }
 
     @Override
-//    @CachePut(value = "todosCache", key = "'allTodos'")
+    @CachePut(value = "todosCache", keyGenerator = "todoKeyGenerator")
     public void edit(Long id, TodoDTO dto) throws TodoNotFoundException {
         todoRepository.save(todoMapper
                 .updateTodoFromDto(dto, todoRepository
@@ -46,17 +46,9 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    @CacheEvict(value = "todosCache", key = "'allTodos'")
     public void delete(Long id) throws TodoNotFoundException {
         todoRepository.delete(todoRepository
                 .findById(id)
                 .orElseThrow(() -> new TodoNotFoundException(id)));
-    }
-
-    public static boolean shouldCache(List<TodoDTO> todos) {
-        if (todos != null) {
-            return todos.stream().anyMatch(todo -> todo.getId() != null && todo.getId() <= 2);
-        }
-        return false;
     }
 }
