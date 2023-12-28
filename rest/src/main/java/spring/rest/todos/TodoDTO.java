@@ -1,14 +1,17 @@
 package spring.rest.todos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 @Getter
 @ToString
 @Builder
-public class TodoDTO {
+@NoArgsConstructor
+@AllArgsConstructor
+public class TodoDTO implements Serializable {
     @JsonProperty("id")
     private Long id;
 
@@ -23,4 +26,17 @@ public class TodoDTO {
 
     @JsonProperty("assignee")
     private Long assigneeId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TodoDTO todoDTO = (TodoDTO) o;
+        return Objects.equals(id, todoDTO.id) && Objects.equals(title, todoDTO.title) && Objects.equals(done, todoDTO.done) && Objects.equals(urgent, todoDTO.urgent) && Objects.equals(assigneeId, todoDTO.assigneeId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, done, urgent, assigneeId);
+    }
 }
