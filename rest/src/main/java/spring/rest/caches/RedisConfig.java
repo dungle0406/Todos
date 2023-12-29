@@ -31,20 +31,20 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
-//    @Bean
+    //    @Bean
 //    @Primary
     public RedisProperties redisProperties() {
         return new RedisProperties();
     }
 
-//    @Bean
+    //    @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(redisHost, redisPort);
 
         return new LettuceConnectionFactory(configuration);
     }
 
-//    @Bean
+    //    @Bean
     public RedisCacheManager cacheManager() {
         RedisCacheConfiguration cacheConfig = myDefaultCacheConfig(Duration.ofMinutes(10)).disableCachingNullValues();
 
@@ -54,12 +54,6 @@ public class RedisConfig {
                 .withCacheConfiguration("todos", myDefaultCacheConfig(Duration.ofMinutes(1)))
                 .build();
     }
-
-//    @Bean
-    public CacheKeyGenerator todoKeyGenerator() {
-        return new CacheKeyGenerator();
-    }
-
 
     private RedisCacheConfiguration myDefaultCacheConfig(Duration duration) {
         return RedisCacheConfiguration

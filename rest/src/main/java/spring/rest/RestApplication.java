@@ -2,12 +2,6 @@ package spring.rest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import spring.rest.caches.CacheKeyGenerator;
-
-import java.lang.reflect.Method;
 
 @SpringBootApplication
 public class RestApplication {

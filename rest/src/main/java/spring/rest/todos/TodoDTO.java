@@ -3,15 +3,17 @@ package spring.rest.todos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Getter
 @ToString
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class TodoDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1;
+
     @JsonProperty("id")
     private Long id;
 

@@ -17,9 +17,6 @@ public class TodoServiceImpl implements TodoService {
     private final int CACHE_THRESHOLD = 3;
 
     @Autowired
-    CacheManager cacheManager;
-
-    @Autowired
     public TodoServiceImpl(TodoRepository todoRepository, TodoMapper todoMapper) {
         this.todoRepository = todoRepository;
         this.todoMapper = todoMapper;
@@ -31,17 +28,8 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-//    @Cacheable(value = "todosCache")
+    @Cacheable(value = "todosCache")
     public List<TodoDTO> findAll(TodoDTO dto) {
-        var cache = cacheManager.getCache("todosCache");
-
-        if (cache != null) {
-            var cacheValueWrapper = cache.get(dto);
-            if (cacheValueWrapper != null) {
-                var cachedData = cacheValueWrapper.get();
-            }
-        }
-
         return todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
                 .stream()
                 .map(todoMapper::mapDtoFromTodo)

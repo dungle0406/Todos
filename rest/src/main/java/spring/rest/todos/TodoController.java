@@ -27,8 +27,11 @@ public class TodoController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public List<TodoDTO> findAllTodos(@ModelAttribute TodoDTO dto) throws JsonProcessingException {
-        return todoService.findAll(dto);
+    public List<TodoDTO> findAllTodos(@ModelAttribute TodoDTO dto) {
+        log.info(dto.toString());
+        List<TodoDTO> dtos =  todoService.findAll(dto);
+        log.info(dtos.toString());
+        return dtos;
     }
 
     @PutMapping("/{id}")
