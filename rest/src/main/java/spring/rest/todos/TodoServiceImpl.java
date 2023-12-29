@@ -1,6 +1,7 @@
 package spring.rest.todos;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Example;
@@ -16,6 +17,9 @@ public class TodoServiceImpl implements TodoService {
     private final int CACHE_THRESHOLD = 3;
 
     @Autowired
+    CacheManager cacheManager;
+
+    @Autowired
     public TodoServiceImpl(TodoRepository todoRepository, TodoMapper todoMapper) {
         this.todoRepository = todoRepository;
         this.todoMapper = todoMapper;
@@ -27,8 +31,17 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    @Cacheable(value = "todosCache", keyGenerator = "todoKeyGenerator")
+//    @Cacheable(value = "todosCache")
     public List<TodoDTO> findAll(TodoDTO dto) {
+        var cache = cacheManager.getCache("todosCache");
+
+        if (cache != null) {
+            var cacheValueWrapper = cache.get(dto);
+            if (cacheValueWrapper != null) {
+                var cachedData = cacheValueWrapper.get();
+            }
+        }
+
         return todoRepository.findAll(Example.of(todoMapper.mapTodoFromDto(dto)))
                 .stream()
                 .map(todoMapper::mapDtoFromTodo)
@@ -37,7 +50,7 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    @CachePut(value = "todosCache", keyGenerator = "todoKeyGenerator")
+    @CachePut(value = "todosCache")
     public void edit(Long id, TodoDTO dto) throws TodoNotFoundException {
         todoRepository.save(todoMapper
                 .updateTodoFromDto(dto, todoRepository

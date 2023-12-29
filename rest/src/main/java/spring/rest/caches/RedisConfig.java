@@ -15,7 +15,9 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import spring.rest.todos.TodoRepository;
 
 import java.lang.reflect.Method;
@@ -29,20 +31,20 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
-    @Bean
-    @Primary
+//    @Bean
+//    @Primary
     public RedisProperties redisProperties() {
         return new RedisProperties();
     }
 
-    @Bean
+//    @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(redisHost, redisPort);
 
         return new LettuceConnectionFactory(configuration);
     }
 
-    @Bean
+//    @Bean
     public RedisCacheManager cacheManager() {
         RedisCacheConfiguration cacheConfig = myDefaultCacheConfig(Duration.ofMinutes(10)).disableCachingNullValues();
 
@@ -53,7 +55,7 @@ public class RedisConfig {
                 .build();
     }
 
-    @Bean
+//    @Bean
     public CacheKeyGenerator todoKeyGenerator() {
         return new CacheKeyGenerator();
     }
@@ -63,6 +65,7 @@ public class RedisConfig {
         return RedisCacheConfiguration
                 .defaultCacheConfig()
                 .entryTtl(duration)
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
     }
 }
